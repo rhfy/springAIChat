@@ -118,7 +118,10 @@ public class ChatServiceImpl implements ChatService {
             log.debug("Chat completion successful, response length: {}", 
                     response != null ? response.length() : 0);
             
-            return response;
+            // Clean up tool call artifacts from response
+            String cleanedResponse = cleanToolCallArtifacts(response);
+            
+            return cleanedResponse;
         });
     }
 
@@ -215,5 +218,28 @@ public class ChatServiceImpl implements ChatService {
             // Execute with streaming
             return promptSpec.stream().content();
         });
+    }
+
+    /**
+     * Cleans tool call artifacts from the response.
+     * Removes <function=...>...</function> tags that may appear in responses
+     * when MCP tools are used.
+     * 
+     * @param response the raw response from the LLM
+     * @return cleaned response without tool call artifacts
+     */
+    private String cleanToolCallArtifacts(String response) {
+        if (response == null) {
+            return null;
+        }
+        
+        // Remove <function=...>...</function> tags
+        // Pattern: <function=toolname>{...json...}</function>
+        String cleaned = response.replaceAll("<function=[^>]+>\\{[^}]*\\}</function>", "");
+        
+        // Trim any extra whitespace
+        cleaned = cleaned.trim();
+        
+        return cleaned;
     }
 }
