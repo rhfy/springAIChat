@@ -26,7 +26,30 @@ const ChatApp = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 백엔드 연결 상태 확인
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/actuator/health', {
+          timeout: 3000
+        });
+        setIsBackendConnected(response.data.status === 'UP');
+      } catch (error) {
+        setIsBackendConnected(false);
+      }
+    };
+
+    // 초기 체크
+    checkBackendHealth();
+
+    // 30초마다 체크
+    const interval = setInterval(checkBackendHealth, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // 로컬 스토리지에서 채팅 세션 불러오기
   useEffect(() => {
@@ -229,9 +252,17 @@ const ChatApp = () => {
               <h1 className="font-semibold">Interactive AI Agent</h1>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Groq Llama 3.3 Connected
+          <div className={cn(
+            "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+            isBackendConnected
+              ? "bg-green-500/10 text-green-400 border-green-500/20"
+              : "bg-red-500/10 text-red-400 border-red-500/20"
+          )}>
+            <div className={cn(
+              "w-2 h-2 rounded-full",
+              isBackendConnected ? "bg-green-500 animate-pulse" : "bg-red-500"
+            )} />
+            {isBackendConnected ? "Groq Llama 3.3 Connected" : "Backend Disconnected"}
           </div>
         </header>
 
