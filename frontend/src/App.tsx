@@ -18,6 +18,7 @@ interface ChatSession {
 }
 
 const STORAGE_KEY = 'chat-sessions';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const ChatApp = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -33,11 +34,13 @@ const ChatApp = () => {
   useEffect(() => {
     const checkBackendHealth = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/actuator/health', {
+        const response = await axios.get(`${API_BASE_URL}/actuator/health`, {
           timeout: 3000
         });
+        console.log('Health check response:', response.data);
         setIsBackendConnected(response.data.status === 'UP');
       } catch (error) {
+        console.error('Health check failed:', error);
         setIsBackendConnected(false);
       }
     };
@@ -140,7 +143,7 @@ const ChatApp = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/chat', {
+      const response = await axios.post(`${API_BASE_URL}/api/chat`, {
         messages: [...messages, userMessage],
       });
 

@@ -33,3 +33,5 @@ dist-ssr
 # Backend logs
 backend.log
 frontend.log
+backend.pid
+frontend.pid

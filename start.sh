@@ -19,6 +19,8 @@ if is_running "backend.pid"; then
     echo "Backend is already running (PID: $(cat backend.pid))"
 else
     echo "Starting Backend (Spring Boot)..."
+    # Clear backend log file
+    > $BACKEND_LOG
     cd backend
     ./gradlew bootRun > ../$BACKEND_LOG 2>&1 &
     BACKEND_PID=$!
@@ -32,6 +34,8 @@ if is_running "frontend.pid"; then
     echo "Frontend is already running (PID: $(cat frontend.pid))"
 else
     echo "Starting Frontend (Vite)..."
+    # Clear frontend log file
+    > $FRONTEND_LOG
     cd frontend
     npm run dev > ../$FRONTEND_LOG 2>&1 &
     FRONTEND_PID=$!
